@@ -1,0 +1,14 @@
+[package]
+  name = "tweetspeak"
+  version = "0.0.1"
+  authors = [ "Brandon Thomas <bt@brand.io>", 
+              "Brandon Thomas <echelon@gmail.com>" ]
+
+[[bin]]
+  name = "tweetspeak"
+
+[dependencies]
+  egg-mode = "0.4.0" # Twitter client
+  rustc-serialize = "0.3.*"
+  toml = "0.2.*"
+
