@@ -1,4 +1,7 @@
 import $ = require('jquery');
+//import buzz = require('buzz');
+//import buzz = require('script!node_modules/buzz/dist/buzz.js');
+import 'buzz';
 
 function fetch(username: string) {
   console.log('Getting page for ', username);
@@ -22,20 +25,42 @@ function setTweets(tweets: [any]) {
     $tweets.append($div);
 
     $div.on('click', (ev: JQueryEventObject) => {
-      let $el = $(ev.target);
-      sayText($el.text());
+      let $el = $(ev.target),
+          filtered = filterText($el.text());
+      sayText(filtered);
     });
   }
 }
 
-function sayText(text: string) {
+function filterText(text: string): string {
   // TODO: Do this on the backend.
-  let cleaned = text.trim()
-      .replace(/&/, ' and ')
-      .replace(/%/, ' percent ')
-      .replace(/"/, '')
-      .replace(/[\.\?!#,]/, ' ');
-  console.log(cleaned);
+  return text.trim()
+      .replace(/&/g, ' and ')
+      .replace(/%/g, ' percent ')
+      .replace(/#/g, ' hashtag ')
+      .replace(/"/g, '')
+      .replace(/…/g, '')
+      .replace(/[\.\?\(\)!#,:]/g, ' ');
+}
+
+function sayText(sentence: string) {
+  // TODO: Do this on the backend.
+  let encoded = encodeURIComponent(sentence),
+      speaker = 'trump',
+      base = 'http://jungle.horse',
+      url = base
+          + '/speak'
+          + '?v=' + speaker
+          + '&s=' + encoded
+          + '&vol=3';
+
+  console.log('Saying', sentence);
+
+  let sound = new buzz.sound(url);
+  window.sound = sound;
+  sound.play();
+
+  console.log(url);
 }
 
 $(function() {
