@@ -1,0 +1,22 @@
+#main {
+  max-width: 800px;
+  margin: auto;
+}
+
+#templates {
+  display: none;
+}
+
+#tweets {
+  padding: 2em 0;
+}
+
+.tweet {
+  border: 1px solid #eee;
+  margin: 0.5em 0;
+}
+
+.tweet .username {
+  font-weight: bold;
+}
+

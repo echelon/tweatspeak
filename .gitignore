@@ -1,3 +1,6 @@
 *~
+node_modules/
 target/
 twitter_secrets.toml
+typings/
+www/build/

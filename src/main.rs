@@ -1,30 +1,54 @@
-// Copyright (c) 2016 Brandon Thomas <bt@brand.io>
+// Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
 extern crate egg_mode;
+extern crate iron;
+extern crate mount;
+extern crate router;
 extern crate rustc_serialize;
+extern crate staticfile;
 extern crate toml;
 
+pub mod handlers;
 pub mod twitter;
 
 use egg_mode::tweet;
+use handlers::errors::ErrorFilter;
+use handlers::tweets::TweetHandler;
+use iron::Iron;
+use iron::middleware::Chain;
+use mount::Mount;
+use router::Router;
+use staticfile::Static;
+use std::path::Path;
+use twitter::TwitterMediator;
+use twitter::TwitterSecrets;
+
+fn init_server(twitter_mediator: TwitterMediator) {
+  let mut mount = Mount::new();
+
+  let file_handler = Static::new(Path::new("www/"));
+  let mut file_chain = Chain::new(file_handler);
+  file_chain.link_after(ErrorFilter);
+  mount.mount("/", file_chain);
+  //mount.mount("/", Static::new(Path::new("www/")));
+
+  let mut tweet_router = Router::new();
+  let twitter_handler = TweetHandler::new(twitter_mediator);
+  let mut chain = Chain::new(twitter_handler);
+  chain.link_after(ErrorFilter);
+  tweet_router.get("/user/:username", chain, "tweet_handler");
+  mount.mount("/tweets", tweet_router);
+
+  Iron::new(mount).http("127.0.0.1:3000").unwrap();
+}
+
 
 fn main() {
-  let secrets = twitter::TwitterSecrets::read_toml_file("./twitter_secrets.toml").unwrap();
+  let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
+      .unwrap();
 
-  let consumer_token = egg_mode::Token::new(secrets.api_key, secrets.api_secret);
+  let twitter_mediator = TwitterMediator::new(secrets);
 
-  let access_token = egg_mode::Token::new(
-    secrets.access_token_key,
-    secrets.access_token_secret
-  );
-
-  let mut timeline = tweet::user_timeline("echelon", true, true, &consumer_token, &access_token)
-      .with_page_size(100);
-
-  let mut i = 0;
-  for tweet in &timeline.start().unwrap().response {
-    println!("{} <@{}> {}", i, tweet.user.screen_name, tweet.text);
-    i += 1;
-  }
+  init_server(twitter_mediator);
 }
 
