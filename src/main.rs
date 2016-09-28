@@ -3,14 +3,17 @@
 extern crate egg_mode;
 extern crate iron;
 extern crate mount;
+extern crate resolve;
 extern crate router;
 extern crate rustc_serialize;
 extern crate staticfile;
 extern crate toml;
 
+pub mod config;
 pub mod handlers;
 pub mod twitter;
 
+use config::Config;
 use egg_mode::tweet;
 use handlers::errors::ErrorFilter;
 use handlers::tweets::TweetHandler;
@@ -30,7 +33,6 @@ fn init_server(twitter_mediator: TwitterMediator) {
   let mut file_chain = Chain::new(file_handler);
   file_chain.link_after(ErrorFilter);
   mount.mount("/", file_chain);
-  //mount.mount("/", Static::new(Path::new("www/")));
 
   let mut tweet_router = Router::new();
   let twitter_handler = TweetHandler::new(twitter_mediator);
@@ -44,6 +46,7 @@ fn init_server(twitter_mediator: TwitterMediator) {
 
 
 fn main() {
+  let configs = Config::read("./configs.toml").unwrap();
   let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
       .unwrap();
 

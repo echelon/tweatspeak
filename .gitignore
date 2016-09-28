@@ -1,4 +1,6 @@
 *~
+configs.toml
+deploy.sh
 node_modules/
 target/
 twitter_secrets.toml
