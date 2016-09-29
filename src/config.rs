@@ -1,6 +1,8 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
 use resolve::hostname;
+use rustc_serialize::json::Json;
+use rustc_serialize::json;
 use std::convert::From;
 use std::fs::File;
 use std::io::Error;
@@ -8,7 +10,7 @@ use std::io::Read;
 use std::io;
 use toml;
 
-#[derive(Clone, Debug, RustcDecodable)]
+#[derive(Clone, Debug, RustcDecodable, RustcEncodable)]
 pub struct Config {
   /// Base URL where we fetch audio files, eg. 'http://server:1000'.
   pub audio_server_base_url: Option<String>,
@@ -76,16 +78,26 @@ impl Config {
   }
 }
 
-fn read_file(filename: &str) -> Result<String, Error> {
-  let mut file = try!(File::open(filename));
-  let mut buf = String::new();
-  try!(file.read_to_string(&mut buf));
-  Ok(buf)
+/// Necessary trait for binding Handlebars variables.
+impl json::ToJson for Config {
+  fn to_json(&self) -> Json {
+    // FIXME: There's probably a more elegant way to do this than
+    // encoding as a JSON string literal, then parsing the string.
+    let encoded = json::encode(&self).unwrap_or("{}".to_string());
+    Json::from_str(&encoded).unwrap_or(Json::Null)
+  }
 }
 
 impl From<io::Error> for ConfigError {
   fn from(error: io::Error) -> ConfigError {
     ConfigError::IoError { cause: error }
   }
+}
+
+fn read_file(filename: &str) -> Result<String, Error> {
+  let mut file = try!(File::open(filename));
+  let mut buf = String::new();
+  try!(file.read_to_string(&mut buf));
+  Ok(buf)
 }
 

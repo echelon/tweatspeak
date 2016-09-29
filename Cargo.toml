@@ -9,6 +9,7 @@
 
 [dependencies]
   egg-mode = "0.4.0" # Twitter client
+  handlebars-iron = "0.18.0"
   iron = "0.4.0"
   mount = "0.2.1" # Path mounting middleware for Iron
   resolve = "0.1.2" # DNS

@@ -1,7 +1,7 @@
 import $ = require('jquery');
-//import buzz = require('buzz');
-//import buzz = require('script!node_modules/buzz/dist/buzz.js');
 import 'buzz';
+
+window.$ = $;
 
 function fetch(username: string) {
   console.log('Getting page for ', username);
@@ -43,11 +43,16 @@ function filterText(text: string): string {
       .replace(/[\.\?\(\)!#,:]/g, ' ');
 }
 
+function getAudioServerBaseUrl(): string {
+  let val = $('meta[name=audio_server_base_url]').attr('content');
+  return val;
+}
+
 function sayText(sentence: string) {
   // TODO: Do this on the backend.
   let encoded = encodeURIComponent(sentence),
       speaker = 'trump',
-      base = 'http://jungle.horse',
+      base = getAudioServerBaseUrl(),
       url = base
           + '/speak'
           + '?v=' + speaker
