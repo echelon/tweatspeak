@@ -2,14 +2,12 @@
 
 use iron::Handler;
 use iron::mime::Mime;
-use iron::prelude::IronError;
 use iron::prelude::IronResult;
 use iron::prelude::Request;
 use iron::prelude::Response;
 use iron::status;
 use router::Router;
 use rustc_serialize::json;
-use twitter::TwitterError;
 use twitter::TwitterMediator;
 
 pub struct TweetHandler {

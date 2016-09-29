@@ -45,8 +45,12 @@ fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
   let mut hbs = HandlebarsEngine::new();
   hbs.add(Box::new(DirectorySource::new("./www/templates/", ".hbs")));
   hbs.reload().unwrap();
+
   index_chain.link_after(hbs);
-  mount.mount("/", index_chain);
+
+  let mut index_router = Router::new();
+  index_router.get("/", index_chain, "index_handler");
+  mount.mount("/", index_router);
 
   // Assets
   let file_handler = Static::new(Path::new("www/"));
