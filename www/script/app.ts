@@ -20,13 +20,17 @@ function setTweets(tweets: [any]) {
     let $div = $('.' + klass).clone().removeClass(klass);
 
     $div.find('.username').html(tweet.username);
+    $div.find('.name').html(tweet.name);
     $div.find('.text').html(tweet.text);
+    $div.find('.avatar').css('background-image', `url(${tweet.avatar})`);
 
     $tweets.append($div);
 
     $div.on('click', (ev: JQueryEventObject) => {
-      let $el = $(ev.target),
-          sentence = $el.text().trim();
+      let $el= $(ev.target),
+          $tweet = $el.closest('.tweet'),
+          $text = $tweet.find('.text'),
+          sentence = $text.text().trim();
       sayText(sentence);
     });
   }

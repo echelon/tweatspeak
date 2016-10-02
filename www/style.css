@@ -1,6 +1,6 @@
 #main {
-  max-width: 800px;
   margin: auto;
+  max-width: 800px;
 }
 
 #templates {
@@ -13,10 +13,21 @@
 
 .tweet {
   border: 1px solid #eee;
+  clear: both;
   margin: 0.5em 0;
+  min-height: 50px;
+  padding: 0.1em 0;
 }
 
 .tweet .username {
   font-weight: bold;
+}
+
+.avatar {
+  background-repeat: no-repeat;
+  float: left;
+  height: 48px;
+  padding: 0 0.2em 0 0;
+  width: 48px;
 }
 

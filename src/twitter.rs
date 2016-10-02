@@ -75,7 +75,6 @@ impl TwitterMediator {
     let mut tweets = Vec::new();
 
     for tweet in &try!(timeline.start()).response {
-      println!("{:?}", tweet);
       let t = Tweet {
         avatar: tweet.user.profile_image_url.clone(),
         created_at: tweet.created_at.clone(),
