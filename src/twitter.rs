@@ -42,8 +42,11 @@ impl TwitterSecrets {
 
 #[derive(Clone, Debug, RustcEncodable)]
 pub struct Tweet {
-  pub username: String,
+  pub avatar: String,
+  pub created_at: String, // TODO: Make this a datetime.
+  pub name: String,
   pub text: String,
+  pub username: String,
 }
 
 #[derive(Clone)]
@@ -72,9 +75,13 @@ impl TwitterMediator {
     let mut tweets = Vec::new();
 
     for tweet in &try!(timeline.start()).response {
+      println!("{:?}", tweet);
       let t = Tweet {
-        username: tweet.user.screen_name.clone(),
+        avatar: tweet.user.profile_image_url.clone(),
+        created_at: tweet.created_at.clone(),
+        name: tweet.user.name.clone(),
         text: tweet.text.clone(),
+        username: tweet.user.screen_name.clone(),
       };
       tweets.push(t);
     }
