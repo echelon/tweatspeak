@@ -26,21 +26,10 @@ function setTweets(tweets: [any]) {
 
     $div.on('click', (ev: JQueryEventObject) => {
       let $el = $(ev.target),
-          filtered = filterText($el.text());
-      sayText(filtered);
+          sentence = $el.text().trim();
+      sayText(sentence);
     });
   }
-}
-
-function filterText(text: string): string {
-  // TODO: Do this on the backend.
-  return text.trim()
-      .replace(/&/g, ' and ')
-      .replace(/%/g, ' percent ')
-      .replace(/#/g, ' hashtag ')
-      .replace(/"/g, '')
-      .replace(/…/g, '')
-      .replace(/[\.\?\(\)!#,:]/g, ' ');
 }
 
 function getAudioServerBaseUrl(): string {
@@ -59,13 +48,9 @@ function sayText(sentence: string) {
           + '&s=' + encoded
           + '&vol=3';
 
-  console.log('Saying', sentence);
-
   let sound = new buzz.sound(url);
   window.sound = sound;
   sound.play();
-
-  console.log(url);
 }
 
 $(function() {
