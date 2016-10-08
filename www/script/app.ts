@@ -11,6 +11,14 @@ function fetch(username: string) {
   });
 }
 
+function fetchPoller() {
+  console.log('Getting feed from poller');
+  let url = '/poller';
+  $.get(url, (data: any) => {
+    setTweets(data);
+  });
+}
+
 function setTweets(tweets: [any]) {
   let $tweets = $('#tweets');
   $tweets.empty();
@@ -57,13 +65,18 @@ function sayText(sentence: string) {
   sound.play();
 }
 
-$(function() {
-  console.log('installing');
-
+function installForm() {
   $('form').submit((ev: JQueryEventObject) => {
     let username = $('input').val().trim();
     fetch(username);
     return false;
+  });
+}
+
+$(function() {
+  console.log('installing');
+  $(() => {
+    fetchPoller();
   });
 });
 

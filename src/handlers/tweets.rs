@@ -8,16 +8,16 @@ use iron::prelude::Response;
 use iron::status;
 use router::Router;
 use rustc_serialize::json;
-use twitter::TwitterMediator;
+use twitter::client::TwitterClient;
 
 pub struct TweetHandler {
-  mediator: TwitterMediator,
+  client: TwitterClient,
 }
 
 impl TweetHandler {
-  pub fn new(mediator: TwitterMediator) -> TweetHandler {
+  pub fn new(client: TwitterClient) -> TweetHandler {
     TweetHandler {
-      mediator: mediator,
+      client: client,
     }
   }
 }
@@ -30,7 +30,7 @@ impl Handler for TweetHandler {
         .unwrap_or("undeclared")
         .to_string();
 
-    let tweets = self.mediator.get_timeline(&username, 50).unwrap(); // FIXME
+    let tweets = self.client.get_timeline(&username, 50).unwrap(); // FIXME
     let response = json::encode(&tweets).unwrap(); // FIXME
     let mime_type = "application/json".parse::<Mime>().unwrap(); // FIXME
 

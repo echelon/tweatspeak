@@ -1,5 +1,6 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
+extern crate chrono;
 extern crate egg_mode;
 extern crate handlebars_iron;
 extern crate iron;
@@ -19,6 +20,7 @@ use handlebars_iron::DirectorySource;
 use handlebars_iron::HandlebarsEngine;
 use handlebars_iron::Template;
 use handlers::errors::ErrorFilter;
+use handlers::poller::PollerHandler;
 use handlers::tweets::TweetHandler;
 use iron::Iron;
 use iron::Set;
@@ -30,10 +32,15 @@ use mount::Mount;
 use router::Router;
 use staticfile::Static;
 use std::path::Path;
-use twitter::TwitterMediator;
-use twitter::TwitterSecrets;
+use std::sync::Arc;
+use std::thread;
+use twitter::client::TwitterClient;
+use twitter::client::TwitterSecrets;
+use twitter::poller::TwitterPoller;
 
-fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
+fn init_server(configs: Config,
+               twitter_client: TwitterClient,
+               twitter_poller: Arc<TwitterPoller>) {
   let mut mount = Mount::new();
   // Index
   let mut index_chain = Chain::new(move |_: &mut Request| {
@@ -58,9 +65,15 @@ fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
   file_chain.link_after(ErrorFilter);
   mount.mount("/assets", file_chain);
 
+  // Poller Endpoint
+  let poller_handler = PollerHandler::new(twitter_poller);
+  let mut chain = Chain::new(poller_handler);
+  chain.link_after(ErrorFilter);
+  mount.mount("/poller", chain);
+
   // Twitter Endpoint
   let mut tweet_router = Router::new();
-  let twitter_handler = TweetHandler::new(twitter_mediator);
+  let twitter_handler = TweetHandler::new(twitter_client);
   let mut chain = Chain::new(twitter_handler);
   chain.link_after(ErrorFilter);
   tweet_router.get("/user/:username", chain, "tweet_handler");
@@ -69,14 +82,21 @@ fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
   Iron::new(mount).http("127.0.0.1:3000").unwrap();
 }
 
+fn init_poller(configs: Config, twitter_client: TwitterClient) -> Arc<TwitterPoller> {
+  let poller = Arc::new(TwitterPoller::new(twitter_client, &configs));
+  let thread_poller = poller.clone();
+  thread::spawn(move || { thread_poller.poll(); });
+  poller
+}
 
 fn main() {
   let configs = Config::read("./configs.toml").unwrap();
   let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
       .unwrap();
 
-  let twitter_mediator = TwitterMediator::new(secrets);
+  let twitter_client = TwitterClient::new(secrets);
 
-  init_server(configs, twitter_mediator);
+  let poller = init_poller(configs.clone(), twitter_client.clone());
+  init_server(configs, twitter_client, poller);
 }
 

@@ -1,26 +1,46 @@
+body {
+  font-family: "PT Sans Narrow";
+}
+
 #main {
   margin: auto;
   max-width: 800px;
 }
 
-#templates {
-  display: none;
+h1 {
+  font-family: "Lobster Two";
+  text-align: center;
+  margin: 1em 0 0.5em;
 }
 
+h2 {
+  font-weight: normal;
+  text-align: center;
+  margin: 0 0 1em;
+}
+
+
 #tweets {
-  padding: 2em 0;
+  padding: 0;
 }
 
 .tweet {
-  border: 1px solid #eee;
+  border-top: 1px solid #eee;
   clear: both;
+  cursor: pointer;
   margin: 0.5em 0;
   min-height: 50px;
   padding: 0.1em 0;
 }
 
 .tweet .username {
+  font-family: "ABeeZee";
   font-weight: bold;
+  margin: 0.3em 0 0 56px;
+}
+
+.tweet .text {
+  margin: 0 0 0.7em 56px;
 }
 
 .avatar {
@@ -29,5 +49,14 @@
   height: 48px;
   padding: 0 0.2em 0 0;
   width: 48px;
+}
+
+#footer {
+  text-align: center;
+}
+
+/** Templates for Javascript */
+#templates {
+  display: none;
 }
 
