@@ -1,5 +1,6 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
+extern crate chrono;
 extern crate egg_mode;
 extern crate handlebars_iron;
 extern crate iron;
@@ -30,10 +31,10 @@ use mount::Mount;
 use router::Router;
 use staticfile::Static;
 use std::path::Path;
-use twitter::TwitterMediator;
-use twitter::TwitterSecrets;
+use twitter::client::TwitterClient;
+use twitter::client::TwitterSecrets;
 
-fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
+fn init_server(configs: Config, twitter_client: TwitterClient) {
   let mut mount = Mount::new();
   // Index
   let mut index_chain = Chain::new(move |_: &mut Request| {
@@ -60,7 +61,7 @@ fn init_server(configs: Config, twitter_mediator: TwitterMediator) {
 
   // Twitter Endpoint
   let mut tweet_router = Router::new();
-  let twitter_handler = TweetHandler::new(twitter_mediator);
+  let twitter_handler = TweetHandler::new(twitter_client);
   let mut chain = Chain::new(twitter_handler);
   chain.link_after(ErrorFilter);
   tweet_router.get("/user/:username", chain, "tweet_handler");
@@ -75,8 +76,8 @@ fn main() {
   let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
       .unwrap();
 
-  let twitter_mediator = TwitterMediator::new(secrets);
+  let twitter_client = TwitterClient::new(secrets);
 
-  init_server(configs, twitter_mediator);
+  init_server(configs, twitter_client);
 }
 

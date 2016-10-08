@@ -14,6 +14,7 @@ use toml;
 pub struct Config {
   /// Base URL where we fetch audio files, eg. 'http://server:1000'.
   pub audio_server_base_url: Option<String>,
+  pub twitter_handles: Option<Vec<String>>,
 }
 
 #[derive(Debug)]
@@ -74,6 +75,9 @@ impl Config {
       audio_server_base_url: self.audio_server_base_url
           .clone()
           .or(other.audio_server_base_url.clone()),
+      twitter_handles: self.twitter_handles
+          .clone()
+          .or(other.twitter_handles.clone()),
     }
   }
 }

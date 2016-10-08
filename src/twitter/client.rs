@@ -1,5 +1,7 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
+use chrono::datetime::DateTime;
+use chrono::offset::fixed::FixedOffset;
 use egg_mode::Token;
 use egg_mode::tweet;
 use egg_mode;
@@ -8,6 +10,9 @@ use std::io::Error;
 use std::io::ErrorKind;
 use std::io::Read;
 use toml;
+
+/// Twitter 'created_at' timestamp format.
+static TIMESTAMP_FORMAT: &'static str = "%a %b %d %H:%M:%S %z %Y";
 
 pub type TwitterError = egg_mode::error::Error;
 
@@ -43,21 +48,22 @@ impl TwitterSecrets {
 #[derive(Clone, Debug, RustcEncodable)]
 pub struct Tweet {
   pub avatar: String,
-  pub created_at: String, // TODO: Make this a datetime.
+  created_datetime: DateTime<FixedOffset>,
+  pub created_at: String,
   pub name: String,
   pub text: String,
   pub username: String,
 }
 
 #[derive(Clone)]
-pub struct TwitterMediator {
+pub struct TwitterClient {
   secrets: TwitterSecrets,
 }
 
-impl TwitterMediator {
+impl TwitterClient {
   /// CTOR.
-  pub fn new(secrets: TwitterSecrets) -> TwitterMediator {
-    TwitterMediator {
+  pub fn new(secrets: TwitterSecrets) -> TwitterClient {
+    TwitterClient {
       secrets: secrets.clone(),
     }
   }
@@ -75,9 +81,20 @@ impl TwitterMediator {
     let mut tweets = Vec::new();
 
     for tweet in &try!(timeline.start()).response {
+      // Format: Fri Oct 07 02:18:06 +0000 2016
+      // Fri (%a) Oct (%b) 07 (%d) 02 (%H) :18 (%M) :06 (%S) +0000 (%z) 2016 (%Y)
+      let datetime = DateTime::parse_from_str(&tweet.created_at,
+                                              TIMESTAMP_FORMAT);
+      if datetime.is_err() {
+        //warn!("Could not parse date: {}", tweet.created_at);
+        println!("Can't format date: `{}`", tweet.created_at);
+        continue;
+      }
+
       let t = Tweet {
         avatar: tweet.user.profile_image_url.clone(),
         created_at: tweet.created_at.clone(),
+        created_datetime: datetime.unwrap(),
         name: tweet.user.name.clone(),
         text: tweet.text.clone(),
         username: tweet.user.screen_name.clone(),
@@ -88,4 +105,18 @@ impl TwitterMediator {
     Ok(tweets)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use chrono::datetime::DateTime;
+  use super::TIMESTAMP_FORMAT;
+
+  #[test]
+  fn test_twitter_date_format() {
+    let timestamp = "Fri Oct 07 02:18:06 +0000 2016";
+    let datetime = DateTime::parse_from_str(timestamp, TIMESTAMP_FORMAT);
+    assert_eq!(true, datetime.is_ok());
+  }
+}
+
 
