@@ -1,7 +1,6 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
 use chrono::datetime::DateTime;
-use chrono::offset::fixed::FixedOffset;
 use egg_mode::Token;
 use egg_mode::tweet;
 use egg_mode;
@@ -10,6 +9,7 @@ use std::io::Error;
 use std::io::ErrorKind;
 use std::io::Read;
 use toml;
+use twitter::tweet::Tweet;
 
 /// Twitter 'created_at' timestamp format.
 static TIMESTAMP_FORMAT: &'static str = "%a %b %d %H:%M:%S %z %Y";
@@ -43,16 +43,6 @@ impl TwitterSecrets {
   pub fn access_token(&self) -> Token {
     Token::new(self.access_token_key.clone(), self.access_token_secret.clone())
   }
-}
-
-#[derive(Clone, Debug, RustcEncodable)]
-pub struct Tweet {
-  pub avatar: String,
-  created_datetime: DateTime<FixedOffset>,
-  pub created_at: String,
-  pub name: String,
-  pub text: String,
-  pub username: String,
 }
 
 #[derive(Clone)]

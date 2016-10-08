@@ -31,8 +31,11 @@ use mount::Mount;
 use router::Router;
 use staticfile::Static;
 use std::path::Path;
+use std::sync::Arc;
+use std::thread;
 use twitter::client::TwitterClient;
 use twitter::client::TwitterSecrets;
+use twitter::poller::TwitterPoller;
 
 fn init_server(configs: Config, twitter_client: TwitterClient) {
   let mut mount = Mount::new();
@@ -70,6 +73,12 @@ fn init_server(configs: Config, twitter_client: TwitterClient) {
   Iron::new(mount).http("127.0.0.1:3000").unwrap();
 }
 
+fn init_poller(configs: Config, twitter_client: TwitterClient) -> Arc<TwitterPoller> {
+  let poller = Arc::new(TwitterPoller::new(twitter_client, &configs));
+  let thread_poller = poller.clone();
+  thread::spawn(move || { thread_poller.poll(); });
+  poller
+}
 
 fn main() {
   let configs = Config::read("./configs.toml").unwrap();
@@ -78,6 +87,7 @@ fn main() {
 
   let twitter_client = TwitterClient::new(secrets);
 
+  init_poller(configs.clone(), twitter_client.clone());
   init_server(configs, twitter_client);
 }
 
