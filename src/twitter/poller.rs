@@ -24,9 +24,12 @@ pub struct TwitterPoller {
 impl TwitterPoller {
 
   pub fn new(client: TwitterClient, config: &Config) -> TwitterPoller {
+    let seconds = config.feed_poll_delay.unwrap_or(60);
+    let length = config.feed_max_length.unwrap_or(50);
+
     TwitterPoller {
-      max_length: 50,
-      sleep_duration: Duration::new(30, 0), // 30 seconds
+      max_length: length,
+      sleep_duration: Duration::new(seconds, 0),
       twitter_client: client,
       usernames: config.twitter_handles.clone().unwrap(), // TODO FIX
       tweets: Arc::new(RwLock::new(Vec::new())),

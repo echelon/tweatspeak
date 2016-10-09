@@ -14,6 +14,8 @@ use toml;
 pub struct Config {
   /// Base URL where we fetch audio files, eg. 'http://server:1000'.
   pub audio_server_base_url: Option<String>,
+  pub feed_max_length: Option<usize>,
+  pub feed_poll_delay: Option<u64>,
   pub twitter_handles: Option<Vec<String>>,
 }
 
@@ -71,10 +73,17 @@ impl Config {
   /// Merge another config object, keeping current values where they
   /// exist, and overriding Optional values where they do not.
   pub fn merge(&self, other: Config) -> Config {
+    // TODO: Cleanup.
     Config {
       audio_server_base_url: self.audio_server_base_url
           .clone()
           .or(other.audio_server_base_url.clone()),
+      feed_max_length: self.feed_max_length
+          .clone()
+          .or(other.feed_max_length.clone()),
+      feed_poll_delay: self.feed_poll_delay
+          .clone()
+          .or(other.feed_poll_delay.clone()),
       twitter_handles: self.twitter_handles
           .clone()
           .or(other.twitter_handles.clone()),
