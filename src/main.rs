@@ -20,6 +20,7 @@ use handlebars_iron::DirectorySource;
 use handlebars_iron::HandlebarsEngine;
 use handlebars_iron::Template;
 use handlers::errors::ErrorFilter;
+use handlers::poller::PollerHandler;
 use handlers::tweets::TweetHandler;
 use iron::Iron;
 use iron::Set;
@@ -37,7 +38,9 @@ use twitter::client::TwitterClient;
 use twitter::client::TwitterSecrets;
 use twitter::poller::TwitterPoller;
 
-fn init_server(configs: Config, twitter_client: TwitterClient) {
+fn init_server(configs: Config,
+               twitter_client: TwitterClient,
+               twitter_poller: Arc<TwitterPoller>) {
   let mut mount = Mount::new();
   // Index
   let mut index_chain = Chain::new(move |_: &mut Request| {
@@ -61,6 +64,12 @@ fn init_server(configs: Config, twitter_client: TwitterClient) {
   let mut file_chain = Chain::new(file_handler);
   file_chain.link_after(ErrorFilter);
   mount.mount("/assets", file_chain);
+
+  // Poller Endpoint
+  let poller_handler = PollerHandler::new(twitter_poller);
+  let mut chain = Chain::new(poller_handler);
+  chain.link_after(ErrorFilter);
+  mount.mount("/poller", chain);
 
   // Twitter Endpoint
   let mut tweet_router = Router::new();
@@ -87,7 +96,7 @@ fn main() {
 
   let twitter_client = TwitterClient::new(secrets);
 
-  init_poller(configs.clone(), twitter_client.clone());
-  init_server(configs, twitter_client);
+  let poller = init_poller(configs.clone(), twitter_client.clone());
+  init_server(configs, twitter_client, poller);
 }
 

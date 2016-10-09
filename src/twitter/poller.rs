@@ -2,12 +2,16 @@
 
 use config::Config;
 use std::collections::HashSet;
+use std::sync::RwLockReadGuard;
 use std::sync::Arc;
+use std::sync::PoisonError;
 use std::sync::RwLock;
 use std::thread::sleep;
 use std::time::Duration;
 use twitter::client::TwitterClient;
 use twitter::tweet::Tweet;
+
+pub type LockReadError<'a> = PoisonError<RwLockReadGuard<'a, Vec<Tweet>>>;
 
 pub struct TwitterPoller {
   max_length: usize,
@@ -29,7 +33,13 @@ impl TwitterPoller {
     }
   }
 
-  /// Meant to be launched in a separate thread. 
+  /// Return a copy of the current tweets to the caller.
+  pub fn get_tweets(&self) -> Result<Vec<Tweet>, LockReadError> {
+    let existing = try!(self.tweets.read());
+    Ok(existing.clone())
+  }
+
+  /// Meant to be launched in a separate thread.
   /// This will poll Twitter for new Tweets and insert them into the
   /// local feed.
   pub fn poll(&self) -> ! {
