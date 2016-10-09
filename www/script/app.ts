@@ -1,7 +1,10 @@
 import $ = require('jquery');
-import 'buzz';
+//import 'buzz';
+
+import AudioPlayer from "./audio";
 
 window.$ = $;
+let audio = new AudioPlayer();
 
 function fetch(username: string) {
   console.log('Getting page for ', username);
@@ -12,7 +15,7 @@ function fetch(username: string) {
 }
 
 function fetchPoller() {
-  console.log('Getting feed from poller');
+  console.info('Getting feed');
   let url = '/poller';
   $.get(url, (data: any) => {
     setTweets(data);
@@ -39,30 +42,9 @@ function setTweets(tweets: [any]) {
           $tweet = $el.closest('.tweet'),
           $text = $tweet.find('.text'),
           sentence = $text.text().trim();
-      sayText(sentence);
+      audio.sayText(sentence);
     });
   }
-}
-
-function getAudioServerBaseUrl(): string {
-  let val = $('meta[name=audio_server_base_url]').attr('content');
-  return val;
-}
-
-function sayText(sentence: string) {
-  // TODO: Do this on the backend.
-  let encoded = encodeURIComponent(sentence),
-      speaker = 'trump',
-      base = getAudioServerBaseUrl(),
-      url = base
-          + '/speak'
-          + '?v=' + speaker
-          + '&s=' + encoded
-          + '&vol=3';
-
-  let sound = new buzz.sound(url);
-  window.sound = sound;
-  sound.play();
 }
 
 function installForm() {
@@ -74,7 +56,7 @@ function installForm() {
 }
 
 $(function() {
-  console.log('installing');
+  console.info('Installing');
   $(() => {
     fetchPoller();
   });
