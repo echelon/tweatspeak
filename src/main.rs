@@ -1,5 +1,7 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
+#[macro_use] extern crate log;
+
 extern crate chrono;
 extern crate egg_mode;
 extern crate handlebars_iron;
@@ -9,10 +11,12 @@ extern crate resolve;
 extern crate router;
 extern crate rustc_serialize;
 extern crate staticfile;
+extern crate time;
 extern crate toml;
 
 pub mod config;
 pub mod handlers;
+pub mod logger;
 pub mod twitter;
 
 use config::Config;
@@ -28,6 +32,7 @@ use iron::middleware::Chain;
 use iron::prelude::Request;
 use iron::prelude::Response;
 use iron::status;
+use logger::SimpleLogger;
 use mount::Mount;
 use router::Router;
 use staticfile::Static;
@@ -37,6 +42,22 @@ use std::thread;
 use twitter::client::TwitterClient;
 use twitter::client::TwitterSecrets;
 use twitter::poller::TwitterPoller;
+
+fn main() {
+  SimpleLogger::init().unwrap();
+
+  let configs = Config::read("./configs.toml").unwrap();
+  let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
+      .unwrap();
+
+  let twitter_client = TwitterClient::new(secrets);
+
+  info!("Starting poller...");
+  let poller = init_poller(configs.clone(), twitter_client.clone());
+
+  info!("Starting server...");
+  init_server(configs, twitter_client, poller);
+}
 
 fn init_server(configs: Config,
                twitter_client: TwitterClient,
@@ -87,16 +108,5 @@ fn init_poller(configs: Config, twitter_client: TwitterClient) -> Arc<TwitterPol
   let thread_poller = poller.clone();
   thread::spawn(move || { thread_poller.poll(); });
   poller
-}
-
-fn main() {
-  let configs = Config::read("./configs.toml").unwrap();
-  let secrets = TwitterSecrets::read_toml_file("./twitter_secrets.toml")
-      .unwrap();
-
-  let twitter_client = TwitterClient::new(secrets);
-
-  let poller = init_poller(configs.clone(), twitter_client.clone());
-  init_server(configs, twitter_client, poller);
 }
 

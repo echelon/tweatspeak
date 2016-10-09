@@ -12,6 +12,8 @@ use toml;
 use twitter::tweet::Tweet;
 
 /// Twitter 'created_at' timestamp format.
+/// Format: Fri Oct 07 02:18:06 +0000 2016
+/// Fri (%a) Oct (%b) 07 (%d) 02 (%H) :18 (%M) :06 (%S) +0000 (%z) 2016 (%Y)
 static TIMESTAMP_FORMAT: &'static str = "%a %b %d %H:%M:%S %z %Y";
 
 pub type TwitterError = egg_mode::error::Error;
@@ -61,6 +63,7 @@ impl TwitterClient {
   /// Fetch the timeline for a given user.
   pub fn get_timeline(&self, username: &str, count: i32) ->
       Result<Vec<Tweet>, TwitterError> {
+    info!("Getting timeline for {}", username);
 
     let api_token = &self.secrets.api_token();
     let access_token = &self.secrets.access_token();
@@ -71,13 +74,10 @@ impl TwitterClient {
     let mut tweets = Vec::new();
 
     for tweet in &try!(timeline.start()).response {
-      // Format: Fri Oct 07 02:18:06 +0000 2016
-      // Fri (%a) Oct (%b) 07 (%d) 02 (%H) :18 (%M) :06 (%S) +0000 (%z) 2016 (%Y)
       let datetime = DateTime::parse_from_str(&tweet.created_at,
                                               TIMESTAMP_FORMAT);
       if datetime.is_err() {
-        //warn!("Could not parse date: {}", tweet.created_at);
-        println!("Can't format date: `{}`", tweet.created_at);
+        warn!("Could not parse date: {}", tweet.created_at);
         continue;
       }
 

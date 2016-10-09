@@ -46,7 +46,9 @@ impl TwitterPoller {
     loop {
       for username in &self.usernames {
         match self.twitter_client.get_timeline(username, 40) {
-          Err(_) => {},
+          Err(err) => {
+            warn!("Error querying twitter handle '{}': {:?}", username, err);
+          },
           Ok(tweets) => {
             self.update_tweets(tweets);
           },
@@ -64,7 +66,7 @@ impl TwitterPoller {
   fn update_tweets(&self, tweets: Vec<Tweet>) {
     let existing = match self.tweets.read() {
       Err(_) => {
-        // warn!("cannot read lock on tweets");
+        warn!("Error updating tweets.");
         return;
       },
       Ok(existing) => { existing.clone() },

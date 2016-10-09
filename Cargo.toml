@@ -12,10 +12,12 @@
   egg-mode = "0.4.0" # Twitter client
   handlebars-iron = "0.18.0"
   iron = "0.4.0"
+  log = "0.3.*"
   mount = "0.2.1" # Path mounting middleware for Iron
   resolve = "0.1.2" # DNS
   router = "0.4.0" # Routing middleware for Iron
   rustc-serialize = "0.3.*"
   staticfile = "0.3.0" # Iron static file serving plugin
+  time = "0.1.*" # TODO: Just use chrono
   toml = "0.2.*"
 

@@ -22,6 +22,8 @@ impl PollerHandler {
 
 impl Handler for PollerHandler {
   fn handle(&self, _req: &mut Request) -> IronResult<Response> {
+    info!("Request for JSON feed.");
+
     let tweets = self.poller.get_tweets().unwrap(); // FIXME
     let response = json::encode(&tweets).unwrap(); // FIXME
     let mime_type = "application/json".parse::<Mime>().unwrap(); // FIXME
