@@ -80,11 +80,13 @@ impl TwitterClient {
         println!("Can't format date: `{}`", tweet.created_at);
         continue;
       }
+      println!("\n\nTweet: {:?}\n\n", tweet);
 
       let t = Tweet {
         avatar: tweet.user.profile_image_url.clone(),
         created_at: tweet.created_at.clone(),
         created_datetime: datetime.unwrap(),
+        id: tweet.id,
         name: tweet.user.name.clone(),
         text: tweet.text.clone(),
         username: tweet.user.screen_name.clone(),
